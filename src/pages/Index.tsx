@@ -4,11 +4,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ColorPicker from '@/components/ColorPicker';
 import PalettePreview from '@/components/PalettePreview';
 import ElementorPreview from '@/components/ElementorPreview';
+import RelumeDemo from '@/components/RelumeDemo';
 import Dashboard from '@/components/Dashboard';
 import TypographySelector from '@/components/TypographySelector';
 import { TailwindShades } from '@/lib/colorUtils';
 import { FontCombination } from '@/lib/typographyUtils';
-import { Palette, Eye, BarChart3, Sparkles, Type } from 'lucide-react';
+import { Palette, Eye, BarChart3, Sparkles, Type, Layout } from 'lucide-react';
 
 const Index = () => {
   const [currentShades, setCurrentShades] = useState<TailwindShades | null>(null);
@@ -57,7 +58,7 @@ const Index = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs defaultValue="generator" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-4 bg-white shadow-sm border border-gray-200">
+          <TabsList className="grid w-full grid-cols-5 bg-white shadow-sm border border-gray-200">
             <TabsTrigger value="generator" className="flex items-center gap-2">
               <Palette className="w-4 h-4" />
               Gerador
@@ -69,6 +70,10 @@ const Index = () => {
             <TabsTrigger value="preview" className="flex items-center gap-2">
               <Eye className="w-4 h-4" />
               Preview
+            </TabsTrigger>
+            <TabsTrigger value="relume" className="flex items-center gap-2">
+              <Layout className="w-4 h-4" />
+              Relume Demo
             </TabsTrigger>
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
@@ -101,6 +106,14 @@ const Index = () => {
 
           <TabsContent value="preview" className="space-y-8">
             <ElementorPreview 
+              shades={currentShades} 
+              colorScheme={currentScheme} 
+              selectedFont={selectedFont}
+            />
+          </TabsContent>
+
+          <TabsContent value="relume" className="space-y-8">
+            <RelumeDemo 
               shades={currentShades} 
               colorScheme={currentScheme} 
               selectedFont={selectedFont}
