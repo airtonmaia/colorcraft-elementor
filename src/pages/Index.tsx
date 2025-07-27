@@ -5,22 +5,29 @@ import ColorPicker from '@/components/ColorPicker';
 import PalettePreview from '@/components/PalettePreview';
 import ElementorPreview from '@/components/ElementorPreview';
 import Dashboard from '@/components/Dashboard';
+import TypographySelector from '@/components/TypographySelector';
 import { TailwindShades } from '@/lib/colorUtils';
-import { Palette, Eye, BarChart3, Sparkles } from 'lucide-react';
+import { FontCombination } from '@/lib/typographyUtils';
+import { Palette, Eye, BarChart3, Sparkles, Type } from 'lucide-react';
 
 const Index = () => {
   const [currentShades, setCurrentShades] = useState<TailwindShades | null>(null);
   const [currentScheme, setCurrentScheme] = useState<string[]>([]);
   const [paletteName, setPaletteName] = useState('Paleta Personalizada');
+  const [selectedFont, setSelectedFont] = useState<FontCombination | null>(null);
 
   const handlePaletteGenerated = (shades: TailwindShades, scheme: string[]) => {
     setCurrentShades(shades);
     setCurrentScheme(scheme);
   };
 
+  const handleFontSelected = (font: FontCombination) => {
+    setSelectedFont(font);
+  };
+
   const handleSavePalette = () => {
     // Implementar lógica de salvar paleta
-    console.log('Salvando paleta:', { currentShades, currentScheme, paletteName });
+    console.log('Salvando paleta:', { currentShades, currentScheme, paletteName, selectedFont });
   };
 
   return (
@@ -50,10 +57,14 @@ const Index = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs defaultValue="generator" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-3 bg-white shadow-sm border border-gray-200">
+          <TabsList className="grid w-full grid-cols-4 bg-white shadow-sm border border-gray-200">
             <TabsTrigger value="generator" className="flex items-center gap-2">
               <Palette className="w-4 h-4" />
               Gerador
+            </TabsTrigger>
+            <TabsTrigger value="typography" className="flex items-center gap-2">
+              <Type className="w-4 h-4" />
+              Tipografia
             </TabsTrigger>
             <TabsTrigger value="preview" className="flex items-center gap-2">
               <Eye className="w-4 h-4" />
@@ -81,8 +92,19 @@ const Index = () => {
             </div>
           </TabsContent>
 
+          <TabsContent value="typography" className="space-y-8">
+            <TypographySelector
+              onFontSelected={handleFontSelected}
+              selectedFont={selectedFont}
+            />
+          </TabsContent>
+
           <TabsContent value="preview" className="space-y-8">
-            <ElementorPreview shades={currentShades} colorScheme={currentScheme} />
+            <ElementorPreview 
+              shades={currentShades} 
+              colorScheme={currentScheme} 
+              selectedFont={selectedFont}
+            />
           </TabsContent>
 
           <TabsContent value="dashboard" className="space-y-8">

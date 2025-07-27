@@ -1,5 +1,6 @@
 
 import { TailwindShades } from '@/lib/colorUtils';
+import { FontCombination } from '@/lib/typographyUtils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,9 +9,10 @@ import { Star, Play, Heart, ArrowRight } from 'lucide-react';
 interface ElementorPreviewProps {
   shades: TailwindShades | null;
   colorScheme: string[];
+  selectedFont?: FontCombination | null;
 }
 
-const ElementorPreview = ({ shades, colorScheme }: ElementorPreviewProps) => {
+const ElementorPreview = ({ shades, colorScheme, selectedFont }: ElementorPreviewProps) => {
   if (!shades) {
     return (
       <Card className="bg-gray-50 border-dashed border-2 border-gray-300">
@@ -30,10 +32,26 @@ const ElementorPreview = ({ shades, colorScheme }: ElementorPreviewProps) => {
   const secondaryColor = colorScheme[1] || shades[700];
   const accentColor = shades[200];
 
+  const getFontStyles = (type: 'primary' | 'secondary' = 'primary') => {
+    if (!selectedFont) return {};
+    return {
+      fontFamily: type === 'primary' 
+        ? `'${selectedFont.primary}', sans-serif` 
+        : `'${selectedFont.secondary}', sans-serif`
+    };
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold text-gray-800">Preview Templates Elementor</h3>
+        <div>
+          <h3 className="text-xl font-semibold text-gray-800">Preview Templates Elementor</h3>
+          {selectedFont && (
+            <p className="text-sm text-gray-600 mt-1">
+              Usando: <span className="font-medium">{selectedFont.name}</span>
+            </p>
+          )}
+        </div>
         <Badge variant="secondary">20+ Templates</Badge>
       </div>
 
@@ -52,21 +70,35 @@ const ElementorPreview = ({ shades, colorScheme }: ElementorPreviewProps) => {
               }}
             >
               <div className="relative z-10">
-                <h1 className="text-4xl font-bold mb-4">Desbloqueie todos os mais de 20 exemplos de IU</h1>
-                <p className="text-xl mb-6 opacity-90">
+                <h1 
+                  className="text-4xl font-bold mb-4"
+                  style={getFontStyles('primary')}
+                >
+                  Desbloqueie todos os mais de 20 exemplos de IU
+                </h1>
+                <p 
+                  className="text-xl mb-6 opacity-90"
+                  style={getFontStyles('secondary')}
+                >
                   Crie e combine até 3 escalas de cores personalizadas e visualize-as instantaneamente
                 </p>
                 <div className="flex gap-4">
                   <Button 
                     className="text-white border-white border-2 hover:bg-white hover:text-black"
-                    style={{ backgroundColor: 'transparent' }}
+                    style={{ 
+                      backgroundColor: 'transparent',
+                      ...getFontStyles('secondary')
+                    }}
                   >
                     Entre para continuar
                   </Button>
                   <Button 
                     variant="outline" 
                     className="text-white border-white border-2 hover:bg-white hover:text-black"
-                    style={{ backgroundColor: 'transparent' }}
+                    style={{ 
+                      backgroundColor: 'transparent',
+                      ...getFontStyles('secondary')
+                    }}
                   >
                     Saiba mais
                   </Button>
@@ -91,8 +123,18 @@ const ElementorPreview = ({ shades, colorScheme }: ElementorPreviewProps) => {
                   >
                     <Heart className="w-6 h-6" style={{ color: primaryColor }} />
                   </div>
-                  <h3 className="font-semibold mb-2">Acompanhe suas despesas</h3>
-                  <p className="text-gray-600 text-sm">Monitore seus gastos com facilidade</p>
+                  <h3 
+                    className="font-semibold mb-2"
+                    style={getFontStyles('primary')}
+                  >
+                    Acompanhe suas despesas
+                  </h3>
+                  <p 
+                    className="text-gray-600 text-sm"
+                    style={getFontStyles('secondary')}
+                  >
+                    Monitore seus gastos com facilidade
+                  </p>
                 </CardContent>
               </Card>
               
@@ -104,8 +146,18 @@ const ElementorPreview = ({ shades, colorScheme }: ElementorPreviewProps) => {
                   >
                     <Star className="w-6 h-6" style={{ color: primaryColor }} />
                   </div>
-                  <h3 className="font-semibold mb-2">Ganhe controle</h3>
-                  <p className="text-gray-600 text-sm">Tenha total controle sobre suas finanças</p>
+                  <h3 
+                    className="font-semibold mb-2"
+                    style={getFontStyles('primary')}
+                  >
+                    Ganhe controle
+                  </h3>
+                  <p 
+                    className="text-gray-600 text-sm"
+                    style={getFontStyles('secondary')}
+                  >
+                    Tenha total controle sobre suas finanças
+                  </p>
                 </CardContent>
               </Card>
               
@@ -117,8 +169,18 @@ const ElementorPreview = ({ shades, colorScheme }: ElementorPreviewProps) => {
                   >
                     <Play className="w-6 h-6" style={{ color: primaryColor }} />
                   </div>
-                  <h3 className="font-semibold mb-2">Automatize tarefas</h3>
-                  <p className="text-gray-600 text-sm">Configure processos automáticos</p>
+                  <h3 
+                    className="font-semibold mb-2"
+                    style={getFontStyles('primary')}
+                  >
+                    Automatize tarefas
+                  </h3>
+                  <p 
+                    className="text-gray-600 text-sm"
+                    style={getFontStyles('secondary')}
+                  >
+                    Configure processos automáticos
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -133,27 +195,40 @@ const ElementorPreview = ({ shades, colorScheme }: ElementorPreviewProps) => {
           <CardContent>
             <div className="flex flex-wrap gap-4">
               <Button 
-                style={{ backgroundColor: primaryColor }}
+                style={{ 
+                  backgroundColor: primaryColor,
+                  ...getFontStyles('secondary')
+                }}
                 className="hover:opacity-90"
               >
                 Botão Primário
               </Button>
               <Button 
                 variant="outline" 
-                style={{ borderColor: primaryColor, color: primaryColor }}
+                style={{ 
+                  borderColor: primaryColor, 
+                  color: primaryColor,
+                  ...getFontStyles('secondary')
+                }}
                 className="hover:bg-gray-50"
               >
                 Botão Secundário
               </Button>
               <Button 
-                style={{ backgroundColor: secondaryColor }}
+                style={{ 
+                  backgroundColor: secondaryColor,
+                  ...getFontStyles('secondary')
+                }}
                 className="hover:opacity-90"
               >
                 Botão Alternativo
               </Button>
               <Button 
                 variant="ghost" 
-                style={{ color: primaryColor }}
+                style={{ 
+                  color: primaryColor,
+                  ...getFontStyles('secondary')
+                }}
                 className="hover:bg-gray-50"
               >
                 Botão Fantasma
@@ -177,39 +252,62 @@ const ElementorPreview = ({ shades, colorScheme }: ElementorPreviewProps) => {
             >
               <div className="grid md:grid-cols-4 gap-8">
                 <div>
-                  <h4 className="font-semibold mb-4">Produto</h4>
+                  <h4 
+                    className="font-semibold mb-4"
+                    style={getFontStyles('primary')}
+                  >
+                    Produto
+                  </h4>
                   <ul className="space-y-2 text-sm opacity-90">
-                    <li>Recursos</li>
-                    <li>Preços</li>
-                    <li>Documentação</li>
+                    <li style={getFontStyles('secondary')}>Recursos</li>
+                    <li style={getFontStyles('secondary')}>Preços</li>
+                    <li style={getFontStyles('secondary')}>Documentação</li>
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-4">Empresa</h4>
+                  <h4 
+                    className="font-semibold mb-4"
+                    style={getFontStyles('primary')}
+                  >
+                    Empresa
+                  </h4>
                   <ul className="space-y-2 text-sm opacity-90">
-                    <li>Sobre</li>
-                    <li>Blog</li>
-                    <li>Carreiras</li>
+                    <li style={getFontStyles('secondary')}>Sobre</li>
+                    <li style={getFontStyles('secondary')}>Blog</li>
+                    <li style={getFontStyles('secondary')}>Carreiras</li>
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-4">Suporte</h4>
+                  <h4 
+                    className="font-semibold mb-4"
+                    style={getFontStyles('primary')}
+                  >
+                    Suporte
+                  </h4>
                   <ul className="space-y-2 text-sm opacity-90">
-                    <li>Ajuda</li>
-                    <li>Contato</li>
-                    <li>Status</li>
+                    <li style={getFontStyles('secondary')}>Ajuda</li>
+                    <li style={getFontStyles('secondary')}>Contato</li>
+                    <li style={getFontStyles('secondary')}>Status</li>
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-4">Legal</h4>
+                  <h4 
+                    className="font-semibold mb-4"
+                    style={getFontStyles('primary')}
+                  >
+                    Legal
+                  </h4>
                   <ul className="space-y-2 text-sm opacity-90">
-                    <li>Privacidade</li>
-                    <li>Termos</li>
-                    <li>Cookies</li>
+                    <li style={getFontStyles('secondary')}>Privacidade</li>
+                    <li style={getFontStyles('secondary')}>Termos</li>
+                    <li style={getFontStyles('secondary')}>Cookies</li>
                   </ul>
                 </div>
               </div>
-              <div className="border-t border-white border-opacity-20 mt-8 pt-8 text-center text-sm opacity-75">
+              <div 
+                className="border-t border-white border-opacity-20 mt-8 pt-8 text-center text-sm opacity-75"
+                style={getFontStyles('secondary')}
+              >
                 © 2024 Palette Generator. Todos os direitos reservados.
               </div>
             </div>
