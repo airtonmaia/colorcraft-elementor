@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ColorPicker from '@/components/ColorPicker';
 import PalettePreview from '@/components/PalettePreview';
-import ElementorPreview from '@/components/ElementorPreview';
+import ElementorWidgets from '@/components/ElementorWidgets';
 import RelumeDemo from '@/components/RelumeDemo';
 import Dashboard from '@/components/Dashboard';
 import TypographySelector from '@/components/TypographySelector';
@@ -43,7 +43,7 @@ const Index = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-800">Palette Generator</h1>
-                <p className="text-xs text-gray-600">Gerador de Paletas + Templates Elementor</p>
+                <p className="text-xs text-gray-600">Gerador de Paletas + Widgets Elementor Pro</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -67,9 +67,9 @@ const Index = () => {
               <Type className="w-4 h-4" />
               Tipografia
             </TabsTrigger>
-            <TabsTrigger value="preview" className="flex items-center gap-2">
+            <TabsTrigger value="widgets" className="flex items-center gap-2">
               <Eye className="w-4 h-4" />
-              Preview
+              Widgets Pro
             </TabsTrigger>
             <TabsTrigger value="relume" className="flex items-center gap-2">
               <Layout className="w-4 h-4" />
@@ -104,8 +104,8 @@ const Index = () => {
             />
           </TabsContent>
 
-          <TabsContent value="preview" className="space-y-8">
-            <ElementorPreview 
+          <TabsContent value="widgets" className="space-y-8">
+            <ElementorWidgets 
               shades={currentShades} 
               colorScheme={currentScheme} 
               selectedFont={selectedFont}
