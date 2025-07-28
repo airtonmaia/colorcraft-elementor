@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Moon, Sun, Save, Download, Copy } from 'lucide-react';
 import ColorPicker from '@/components/ColorPicker';
-import PalettePreview from '@/components/PalettePreview';
+import ColorPaletteDisplay from '@/components/ColorPaletteDisplay';
 import ContrastChecker from '@/components/ContrastChecker';
 import ElementorWidgets from '@/components/ElementorWidgets';
 import WebsiteDemo from '@/components/WebsiteDemo';
@@ -193,7 +193,7 @@ const Index = () => {
               </div>
               
               <div className="flex-1">
-                <PalettePreview
+                <ColorPaletteDisplay
                   palette={currentPalette}
                   harmonies={currentHarmonies}
                   paletteName={paletteName}

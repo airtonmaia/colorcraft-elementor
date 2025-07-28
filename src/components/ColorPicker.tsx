@@ -19,7 +19,7 @@ const ColorPicker = ({ onPaletteGenerated }: ColorPickerProps) => {
     tertiary: ''
   });
   
-  const [harmonyType, setHarmonyType] = useState<'complementary' | 'analogous' | 'triadic' | 'tetradic' | 'split-complementary' | 'monochromatic'>('auto');
+  const [harmonyType, setHarmonyType] = useState<'complementary' | 'analogous' | 'triadic' | 'tetradic' | 'split-complementary' | 'monochromatic'>('analogous');
   const [extractedColors, setExtractedColors] = useState<string[]>([]);
   const [colorName, setColorName] = useState('Custom');
 
@@ -200,13 +200,13 @@ const ColorPicker = ({ onPaletteGenerated }: ColorPickerProps) => {
       <Card>
         <CardContent className="pt-6">
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Color combination scheme • auto</Label>
+            <Label className="text-sm font-medium">Color combination scheme • {harmonyType}</Label>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { value: 'auto', label: 'Auto' },
-                { value: 'complementary', label: 'Complementary' },
                 { value: 'analogous', label: 'Analogous' },
+                { value: 'complementary', label: 'Complementary' },
                 { value: 'triadic', label: 'Triadic' },
+                { value: 'tetradic', label: 'Tetradic' },
                 { value: 'monochromatic', label: 'Monochromatic' },
                 { value: 'split-complementary', label: 'Split Complementary' }
               ].map((scheme) => (
@@ -214,7 +214,7 @@ const ColorPicker = ({ onPaletteGenerated }: ColorPickerProps) => {
                   key={scheme.value}
                   variant={harmonyType === scheme.value ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setHarmonyType(scheme.value as any)}
+                  onClick={() => setHarmonyType(scheme.value as typeof harmonyType)}
                   className="text-xs"
                 >
                   {scheme.label}
