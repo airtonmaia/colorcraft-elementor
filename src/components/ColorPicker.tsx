@@ -31,16 +31,31 @@ const ColorPicker = ({ onPaletteGenerated }: ColorPickerProps) => {
     { value: 'monochromatic', label: 'Monocromático', description: 'Variações de uma cor' },
   ];
 
-  // Gerar paleta em tempo real
+  // Generate palette in real time with error handling
   useEffect(() => {
     if (brandColors.primary) {
-      const palette = generateMultiColorPalette(brandColors);
-      const harmonies = generateHarmoniousColors(brandColors.primary, harmonyType);
-      onPaletteGenerated(palette, harmonies);
+      try {
+        console.log('Generating palette for colors:', brandColors);
+        const palette = generateMultiColorPalette(brandColors);
+        const harmonies = generateHarmoniousColors(brandColors.primary, harmonyType);
+        onPaletteGenerated(palette, harmonies);
+      } catch (error) {
+        console.error('Error generating palette:', error);
+        toast.error('Erro ao gerar paleta. Verifique se a cor é válida.');
+      }
     }
   }, [brandColors, harmonyType, onPaletteGenerated]);
 
   const handleColorChange = (type: 'primary' | 'secondary' | 'tertiary', color: string) => {
+    console.log('Color change:', type, color);
+    
+    // Validate hex color format
+    const hexRegex = /^#[0-9A-F]{6}$/i;
+    if (!hexRegex.test(color)) {
+      console.warn('Invalid hex color format:', color);
+      return;
+    }
+    
     setBrandColors(prev => ({
       ...prev,
       [type]: color

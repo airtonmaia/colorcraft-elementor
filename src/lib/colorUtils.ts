@@ -1,3 +1,4 @@
+
 import chroma from 'chroma-js';
 
 export interface ColorPalette {
@@ -34,30 +35,63 @@ export interface ContrastResult {
 }
 
 export const generateTailwindShades = (baseColor: string): TailwindShades => {
-  const base = chroma(baseColor);
-  const hsl = base.hsl();
-  const [h, s, l] = [hsl[0] || 0, hsl[1] || 0, hsl[2] || 0];
-  
-  // Função para gerar cores seguindo o padrão Tailwind
-  const generateShade = (lightness: number, saturationMultiplier: number = 1) => {
-    const adjustedSaturation = Math.min(s * saturationMultiplier, 1);
-    return chroma.hsl(h, adjustedSaturation, lightness).hex();
-  };
-  
-  // Gerar tons seguindo a escala do Tailwind CSS
-  return {
-    50: generateShade(0.98, 0.1),
-    100: generateShade(0.95, 0.2),
-    200: generateShade(0.90, 0.3),
-    300: generateShade(0.83, 0.4),
-    400: generateShade(0.73, 0.6),
-    500: baseColor, // Cor base
-    600: generateShade(Math.max(l * 0.85, 0.45), 1.1),
-    700: generateShade(Math.max(l * 0.70, 0.38), 1.2),
-    800: generateShade(Math.max(l * 0.55, 0.25), 1.3),
-    900: generateShade(Math.max(l * 0.35, 0.15), 1.4),
-    950: generateShade(Math.max(l * 0.20, 0.08), 1.5),
-  };
+  try {
+    // Validate and parse the base color
+    const base = chroma(baseColor);
+    const hsl = base.hsl();
+    
+    // Handle NaN values that can occur with grayscale colors
+    const h = isNaN(hsl[0]) ? 0 : hsl[0];
+    const s = isNaN(hsl[1]) ? 0 : hsl[1];
+    const l = isNaN(hsl[2]) ? 0.5 : hsl[2]; // Default to 50% lightness if NaN
+    
+    // Function to generate colors following Tailwind pattern
+    const generateShade = (targetLightness: number, saturationMultiplier: number = 1): string => {
+      try {
+        // Ensure values are within valid ranges
+        const clampedLightness = Math.max(0, Math.min(1, targetLightness));
+        const adjustedSaturation = Math.max(0, Math.min(1, s * saturationMultiplier));
+        
+        return chroma.hsl(h, adjustedSaturation, clampedLightness).hex();
+      } catch (error) {
+        console.error('Error generating shade:', error);
+        return '#000000'; // Fallback color
+      }
+    };
+    
+    // Generate shades following Tailwind CSS scale with proper lightness distribution
+    const shades: TailwindShades = {
+      50: generateShade(0.98, 0.1),
+      100: generateShade(0.95, 0.2),
+      200: generateShade(0.90, 0.3),
+      300: generateShade(0.83, 0.4),
+      400: generateShade(0.73, 0.6),
+      500: baseColor, // Base color
+      600: generateShade(Math.max(l * 0.85, 0.45), 1.1),
+      700: generateShade(Math.max(l * 0.70, 0.38), 1.2),
+      800: generateShade(Math.max(l * 0.55, 0.25), 1.3),
+      900: generateShade(Math.max(l * 0.35, 0.15), 1.4),
+      950: generateShade(Math.max(l * 0.20, 0.08), 1.5),
+    };
+    
+    return shades;
+  } catch (error) {
+    console.error('Error generating Tailwind shades:', error);
+    // Return a fallback palette based on gray colors
+    return {
+      50: '#f9fafb',
+      100: '#f3f4f6',
+      200: '#e5e7eb',
+      300: '#d1d5db',
+      400: '#9ca3af',
+      500: '#6b7280',
+      600: '#4b5563',
+      700: '#374151',
+      800: '#1f2937',
+      900: '#111827',
+      950: '#030712',
+    };
+  }
 };
 
 export const generateMultiColorPalette = (brandColors: BrandColors): { [key: string]: TailwindShades } => {
