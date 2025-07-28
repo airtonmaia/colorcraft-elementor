@@ -1,4 +1,3 @@
-
 import chroma from 'chroma-js';
 
 export interface ColorPalette {
@@ -34,63 +33,122 @@ export interface ContrastResult {
   readable: boolean;
 }
 
+// Improved Tailwind shade generation with vibrant colors
 export const generateTailwindShades = (baseColor: string): TailwindShades => {
   try {
-    // Validate and parse the base color
     const base = chroma(baseColor);
     const hsl = base.hsl();
     
-    // Handle NaN values that can occur with grayscale colors
+    // Handle edge cases and ensure valid values
     const h = isNaN(hsl[0]) ? 0 : hsl[0];
-    const s = isNaN(hsl[1]) ? 0 : hsl[1];
-    const l = isNaN(hsl[2]) ? 0.5 : hsl[2]; // Default to 50% lightness if NaN
+    const s = isNaN(hsl[1]) ? 0 : Math.min(Math.max(hsl[1], 0.3), 1); // Ensure minimum saturation for vibrancy
+    const l = isNaN(hsl[2]) ? 0.5 : hsl[2];
     
-    // Function to generate colors following Tailwind pattern
+    // Enhanced shade generation for more vibrant colors
     const generateShade = (targetLightness: number, saturationMultiplier: number = 1): string => {
       try {
-        // Ensure values are within valid ranges
-        const clampedLightness = Math.max(0, Math.min(1, targetLightness));
-        const adjustedSaturation = Math.max(0, Math.min(1, s * saturationMultiplier));
+        const clampedLightness = Math.max(0.05, Math.min(0.95, targetLightness));
         
-        return chroma.hsl(h, adjustedSaturation, clampedLightness).hex();
+        // Enhanced saturation calculation for better vibrancy
+        let adjustedSaturation = s * saturationMultiplier;
+        
+        // Boost saturation for lighter shades to maintain vibrancy
+        if (targetLightness > 0.7) {
+          adjustedSaturation = Math.min(adjustedSaturation * 1.2, 1);
+        }
+        
+        // Ensure minimum saturation for vibrant colors
+        adjustedSaturation = Math.max(adjustedSaturation, 0.2);
+        adjustedSaturation = Math.min(adjustedSaturation, 1);
+        
+        const color = chroma.hsl(h, adjustedSaturation, clampedLightness);
+        return color.hex();
       } catch (error) {
         console.error('Error generating shade:', error);
-        return '#000000'; // Fallback color
+        return chroma.hsl(h, 0.5, targetLightness).hex();
       }
     };
     
-    // Generate shades following Tailwind CSS scale with proper lightness distribution
+    // More accurate Tailwind CSS scale with enhanced vibrancy
     const shades: TailwindShades = {
-      50: generateShade(0.98, 0.1),
-      100: generateShade(0.95, 0.2),
-      200: generateShade(0.90, 0.3),
-      300: generateShade(0.83, 0.4),
-      400: generateShade(0.73, 0.6),
-      500: baseColor, // Base color
-      600: generateShade(Math.max(l * 0.85, 0.45), 1.1),
-      700: generateShade(Math.max(l * 0.70, 0.38), 1.2),
-      800: generateShade(Math.max(l * 0.55, 0.25), 1.3),
-      900: generateShade(Math.max(l * 0.35, 0.15), 1.4),
-      950: generateShade(Math.max(l * 0.20, 0.08), 1.5),
+      50: generateShade(0.97, 0.15),   // Very light, low saturation
+      100: generateShade(0.94, 0.25),  // Light, slight saturation
+      200: generateShade(0.87, 0.35),  // Light, more saturation
+      300: generateShade(0.78, 0.50),  // Medium light
+      400: generateShade(0.65, 0.75),  // Medium, good saturation
+      500: base.hex(),                 // Base color (unchanged)
+      600: generateShade(Math.max(l * 0.82, 0.42), 1.05), // Slightly darker
+      700: generateShade(Math.max(l * 0.68, 0.32), 1.10), // Medium dark
+      800: generateShade(Math.max(l * 0.52, 0.22), 1.15), // Dark
+      900: generateShade(Math.max(l * 0.35, 0.13), 1.20), // Very dark
+      950: generateShade(Math.max(l * 0.22, 0.08), 1.25), // Extremely dark
     };
     
     return shades;
   } catch (error) {
     console.error('Error generating Tailwind shades:', error);
-    // Return a fallback palette based on gray colors
+    // Return a vibrant fallback palette
     return {
-      50: '#f9fafb',
-      100: '#f3f4f6',
-      200: '#e5e7eb',
-      300: '#d1d5db',
-      400: '#9ca3af',
-      500: '#6b7280',
-      600: '#4b5563',
-      700: '#374151',
-      800: '#1f2937',
-      900: '#111827',
-      950: '#030712',
+      50: '#f8fafc',
+      100: '#f1f5f9',
+      200: '#e2e8f0',
+      300: '#cbd5e1',
+      400: '#94a3b8',
+      500: '#64748b',
+      600: '#475569',
+      700: '#334155',
+      800: '#1e293b',
+      900: '#0f172a',
+      950: '#020617',
     };
+  }
+};
+
+// Enhanced color name detection based on Tailwind colors
+export const detectTailwindColorName = (hexColor: string): string => {
+  const tailwindColors = {
+    // Enhanced color mapping with better detection
+    '#ef4444': 'red',
+    '#f97316': 'orange', 
+    '#f59e0b': 'amber',
+    '#eab308': 'yellow',
+    '#84cc16': 'lime',
+    '#22c55e': 'green',
+    '#10b981': 'emerald',
+    '#14b8a6': 'teal',
+    '#06b6d4': 'cyan',
+    '#0ea5e9': 'sky',
+    '#3b82f6': 'blue',
+    '#6366f1': 'indigo',
+    '#8b5cf6': 'violet',
+    '#a855f7': 'purple',
+    '#d946ef': 'fuchsia',
+    '#ec4899': 'pink',
+    '#f43f5e': 'rose',
+    '#6b7280': 'gray',
+    '#71717a': 'zinc',
+    '#737373': 'neutral',
+    '#78716c': 'stone',
+  };
+  
+  try {
+    const inputColor = chroma(hexColor);
+    let closestColor = 'custom';
+    let smallestDistance = Infinity;
+    
+    Object.entries(tailwindColors).forEach(([hex, name]) => {
+      const distance = chroma.distance(inputColor, chroma(hex));
+      if (distance < smallestDistance) {
+        smallestDistance = distance;
+        closestColor = name;
+      }
+    });
+    
+    // Return the closest color name if distance is reasonable
+    return smallestDistance < 50 ? closestColor : 'custom';
+  } catch (error) {
+    console.error('Error detecting color name:', error);
+    return 'custom';
   }
 };
 
@@ -114,44 +172,44 @@ export const generateMultiColorPalette = (brandColors: BrandColors): { [key: str
 
 export const generateHarmoniousColors = (baseColor: string, type: 'complementary' | 'analogous' | 'triadic' | 'tetradic' | 'split-complementary' | 'monochromatic'): string[] => {
   const base = chroma(baseColor);
-  const hue = base.get('hsl.h');
-  const saturation = base.get('hsl.s');
-  const lightness = base.get('hsl.l');
+  const hue = base.get('hsl.h') || 0;
+  const saturation = Math.max(base.get('hsl.s') || 0, 0.3); // Ensure minimum saturation
+  const lightness = base.get('hsl.l') || 0.5;
   
   switch (type) {
     case 'complementary':
       return [
         baseColor,
-        chroma.hsl(hue + 180, saturation, lightness).hex(),
+        chroma.hsl((hue + 180) % 360, saturation, lightness).hex(),
       ];
     
     case 'analogous':
       return [
-        chroma.hsl(hue - 30, saturation, lightness).hex(),
+        chroma.hsl((hue - 30 + 360) % 360, saturation, lightness).hex(),
         baseColor,
-        chroma.hsl(hue + 30, saturation, lightness).hex(),
+        chroma.hsl((hue + 30) % 360, saturation, lightness).hex(),
       ];
     
     case 'triadic':
       return [
         baseColor,
-        chroma.hsl(hue + 120, saturation, lightness).hex(),
-        chroma.hsl(hue + 240, saturation, lightness).hex(),
+        chroma.hsl((hue + 120) % 360, saturation, lightness).hex(),
+        chroma.hsl((hue + 240) % 360, saturation, lightness).hex(),
       ];
     
     case 'tetradic':
       return [
         baseColor,
-        chroma.hsl(hue + 90, saturation, lightness).hex(),
-        chroma.hsl(hue + 180, saturation, lightness).hex(),
-        chroma.hsl(hue + 270, saturation, lightness).hex(),
+        chroma.hsl((hue + 90) % 360, saturation, lightness).hex(),
+        chroma.hsl((hue + 180) % 360, saturation, lightness).hex(),
+        chroma.hsl((hue + 270) % 360, saturation, lightness).hex(),
       ];
     
     case 'split-complementary':
       return [
         baseColor,
-        chroma.hsl(hue + 150, saturation, lightness).hex(),
-        chroma.hsl(hue + 210, saturation, lightness).hex(),
+        chroma.hsl((hue + 150) % 360, saturation, lightness).hex(),
+        chroma.hsl((hue + 210) % 360, saturation, lightness).hex(),
       ];
     
     case 'monochromatic':
@@ -180,7 +238,7 @@ export const calculateContrast = (foreground: string, background: string): Contr
     readable = true;
   } else if (contrast >= 3) {
     level = 'AA';
-    readable = false; // Apenas para textos grandes
+    readable = false;
   }
   
   return {
