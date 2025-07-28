@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/s
 import { AppSidebar } from '@/components/AppSidebar';
 import ColorPicker from '@/components/ColorPicker';
 import PalettePreview from '@/components/PalettePreview';
+import ContrastChecker from '@/components/ContrastChecker';
 import ElementorWidgets from '@/components/ElementorWidgets';
 import RelumeDemo from '@/components/RelumeDemo';
 import Dashboard from '@/components/Dashboard';
@@ -12,8 +13,8 @@ import { TailwindShades } from '@/lib/colorUtils';
 import { FontCombination } from '@/lib/typographyUtils';
 
 const Index = () => {
-  const [currentShades, setCurrentShades] = useState<TailwindShades | null>(null);
-  const [currentScheme, setCurrentScheme] = useState<string[]>([]);
+  const [currentPalette, setCurrentPalette] = useState<{ [key: string]: TailwindShades } | null>(null);
+  const [currentHarmonies, setCurrentHarmonies] = useState<string[]>([]);
   const [paletteName, setPaletteName] = useState('Paleta Personalizada');
   const [selectedFont, setSelectedFont] = useState<FontCombination | null>(null);
   const [activeTab, setActiveTab] = useState('generator');
@@ -32,9 +33,9 @@ const Index = () => {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  const handlePaletteGenerated = (shades: TailwindShades, scheme: string[]) => {
-    setCurrentShades(shades);
-    setCurrentScheme(scheme);
+  const handlePaletteGenerated = (palette: { [key: string]: TailwindShades }, harmonies: string[]) => {
+    setCurrentPalette(palette);
+    setCurrentHarmonies(harmonies);
   };
 
   const handleFontSelected = (font: FontCombination) => {
@@ -42,7 +43,7 @@ const Index = () => {
   };
 
   const handleSavePalette = () => {
-    console.log('Salvando paleta:', { currentShades, currentScheme, paletteName, selectedFont });
+    console.log('Salvando paleta:', { currentPalette, currentHarmonies, paletteName, selectedFont });
   };
 
   const renderContent = () => {
@@ -55,12 +56,20 @@ const Index = () => {
             </div>
             <div className="space-y-6">
               <PalettePreview
-                shades={currentShades}
-                colorScheme={currentScheme}
+                palette={currentPalette}
+                harmonies={currentHarmonies}
                 paletteName={paletteName}
                 onSavePalette={handleSavePalette}
               />
             </div>
+          </div>
+        );
+      case 'contrast':
+        return currentPalette ? (
+          <ContrastChecker palette={currentPalette} />
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-600">Gere uma paleta primeiro para verificar contrastes</p>
           </div>
         );
       case 'typography':
@@ -73,16 +82,16 @@ const Index = () => {
       case 'widgets':
         return (
           <ElementorWidgets 
-            shades={currentShades} 
-            colorScheme={currentScheme} 
+            shades={currentPalette ? currentPalette.primary : null} 
+            colorScheme={currentHarmonies} 
             selectedFont={selectedFont}
           />
         );
       case 'relume':
         return (
           <RelumeDemo 
-            shades={currentShades} 
-            colorScheme={currentScheme} 
+            shades={currentPalette ? currentPalette.primary : null} 
+            colorScheme={currentHarmonies} 
             selectedFont={selectedFont}
           />
         );
@@ -96,8 +105,8 @@ const Index = () => {
             </div>
             <div className="space-y-6">
               <PalettePreview
-                shades={currentShades}
-                colorScheme={currentScheme}
+                palette={currentPalette}
+                harmonies={currentHarmonies}
                 paletteName={paletteName}
                 onSavePalette={handleSavePalette}
               />

@@ -1,179 +1,306 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload, Palette, Copy } from 'lucide-react';
-import { generateTailwindShades, generateColorScheme, extractColorsFromImage, TailwindShades } from '@/lib/colorUtils';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Upload, Palette, Plus, X } from 'lucide-react';
+import { generateTailwindShades, generateMultiColorPalette, generateHarmoniousColors, BrandColors, TailwindShades } from '@/lib/colorUtils';
 import { toast } from 'sonner';
 
 interface ColorPickerProps {
-  onPaletteGenerated: (shades: TailwindShades, scheme: string[]) => void;
+  onPaletteGenerated: (palette: { [key: string]: TailwindShades }, harmonies: string[]) => void;
 }
 
 const ColorPicker = ({ onPaletteGenerated }: ColorPickerProps) => {
-  const [baseColor, setBaseColor] = useState('#f97316');
-  const [selectedScheme, setSelectedScheme] = useState<'analogous' | 'complementary' | 'triadic' | 'tetradic' | 'split-complementary'>('analogous');
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [brandColors, setBrandColors] = useState<BrandColors>({
+    primary: '#CD9C55',
+    secondary: '',
+    tertiary: ''
+  });
+  
+  const [harmonyType, setHarmonyType] = useState<'complementary' | 'analogous' | 'triadic' | 'tetradic' | 'split-complementary' | 'monochromatic'>('analogous');
   const [extractedColors, setExtractedColors] = useState<string[]>([]);
 
-  const schemes = [
-    { value: 'analogous', label: 'Análogo', description: 'Cores próximas no círculo cromático' },
-    { value: 'complementary', label: 'Complementar', description: 'Cores opostas para criar contraste' },
-    { value: 'triadic', label: 'Triádico', description: 'Três cores uniformemente espaçadas' },
-    { value: 'tetradic', label: 'Tetrádico', description: 'Quatro cores uniformemente espaçadas' },
-    { value: 'split-complementary', label: 'Complementar Dividido', description: 'Uma cor base e duas vizinhas de seu oposto' },
+  const harmonyTypes = [
+    { value: 'complementary', label: 'Complementar', description: 'Cores opostas para máximo contraste' },
+    { value: 'analogous', label: 'Análogo', description: 'Cores próximas, harmonia natural' },
+    { value: 'triadic', label: 'Triádico', description: 'Três cores equilibradas' },
+    { value: 'tetradic', label: 'Tetrádico', description: 'Quatro cores balanceadas' },
+    { value: 'split-complementary', label: 'Complementar Dividido', description: 'Contraste suave' },
+    { value: 'monochromatic', label: 'Monocromático', description: 'Variações de uma cor' },
   ];
 
-  const handleGeneratePalette = async () => {
-    setIsGenerating(true);
-    
-    try {
-      const shades = generateTailwindShades(baseColor);
-      const scheme = generateColorScheme(baseColor, selectedScheme);
-      
-      onPaletteGenerated(shades, scheme);
-      toast.success('Paleta gerada com sucesso!');
-    } catch (error) {
-      toast.error('Erro ao gerar paleta');
-    } finally {
-      setIsGenerating(false);
+  // Gerar paleta em tempo real
+  useEffect(() => {
+    if (brandColors.primary) {
+      const palette = generateMultiColorPalette(brandColors);
+      const harmonies = generateHarmoniousColors(brandColors.primary, harmonyType);
+      onPaletteGenerated(palette, harmonies);
     }
+  }, [brandColors, harmonyType, onPaletteGenerated]);
+
+  const handleColorChange = (type: 'primary' | 'secondary' | 'tertiary', color: string) => {
+    setBrandColors(prev => ({
+      ...prev,
+      [type]: color
+    }));
+  };
+
+  const addSecondaryColor = () => {
+    if (!brandColors.secondary) {
+      setBrandColors(prev => ({
+        ...prev,
+        secondary: '#6B7280'
+      }));
+    }
+  };
+
+  const addTertiaryColor = () => {
+    if (!brandColors.tertiary) {
+      setBrandColors(prev => ({
+        ...prev,
+        tertiary: '#10B981'
+      }));
+    }
+  };
+
+  const removeColor = (type: 'secondary' | 'tertiary') => {
+    setBrandColors(prev => ({
+      ...prev,
+      [type]: ''
+    }));
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setIsGenerating(true);
-    
     try {
+      const { extractColorsFromImage } = await import('@/lib/colorUtils');
       const colors = await extractColorsFromImage(file);
       setExtractedColors(colors);
       if (colors.length > 0) {
-        setBaseColor(colors[0]);
-        toast.success(`${colors.length} cores extraídas da imagem!`);
+        handleColorChange('primary', colors[0]);
+        toast.success(`${colors.length} cores extraídas!`);
       }
     } catch (error) {
       toast.error('Erro ao extrair cores da imagem');
-    } finally {
-      setIsGenerating(false);
     }
   };
 
   const copyToClipboard = (color: string) => {
     navigator.clipboard.writeText(color);
-    toast.success('Cor copiada para a área de transferência!');
+    toast.success('Cor copiada!');
   };
 
   return (
-    <div className="space-y-6 bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-      <div className="flex items-center gap-2 mb-4">
-        <Palette className="w-5 h-5 text-brand-500" />
-        <h2 className="text-xl font-semibold text-gray-800">Gerador de Paleta</h2>
-      </div>
-
-      {/* Input de cor base */}
-      <div className="space-y-2">
-        <Label htmlFor="base-color">Cor Base</Label>
-        <div className="flex gap-2">
-          <div className="relative">
-            <Input
-              id="base-color"
-              type="color"
-              value={baseColor}
-              onChange={(e) => setBaseColor(e.target.value)}
-              className="w-12 h-12 border-2 border-gray-200 rounded-lg cursor-pointer"
-            />
-          </div>
-          <Input
-            type="text"
-            value={baseColor}
-            onChange={(e) => setBaseColor(e.target.value)}
-            placeholder="#f97316"
-            className="flex-1"
-          />
-        </div>
-      </div>
-
-      {/* Upload de imagem */}
-      <div className="space-y-2">
-        <Label htmlFor="image-upload">Extrair Cores de Imagem</Label>
-        <div className="flex items-center gap-2">
-          <Input
-            id="image-upload"
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-          />
-          <Button
-            variant="outline"
-            onClick={() => document.getElementById('image-upload')?.click()}
-            className="flex items-center gap-2"
-          >
-            <Upload className="w-4 h-4" />
-            Upload Imagem
-          </Button>
-        </div>
-      </div>
-
-      {/* Cores extraídas */}
-      {extractedColors.length > 0 && (
-        <div className="space-y-2">
-          <Label>Cores Extraídas</Label>
-          <div className="flex gap-2">
-            {extractedColors.map((color, index) => (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="w-5 h-5" />
+            Cores da Marca
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Cor Primária */}
+          <div className="space-y-2">
+            <Label>Cor Primária *</Label>
+            <div className="flex gap-2">
               <div
-                key={index}
-                className="w-12 h-12 rounded-lg border-2 border-gray-200 cursor-pointer hover:scale-105 transition-transform"
-                style={{ backgroundColor: color }}
-                onClick={() => setBaseColor(color)}
-                title={color}
+                className="w-12 h-12 rounded-lg border-2 border-gray-200 cursor-pointer"
+                style={{ backgroundColor: brandColors.primary }}
+                onClick={() => document.getElementById('primary-color')?.click()}
               />
-            ))}
+              <Input
+                id="primary-color"
+                type="color"
+                value={brandColors.primary}
+                onChange={(e) => handleColorChange('primary', e.target.value)}
+                className="sr-only"
+              />
+              <Input
+                value={brandColors.primary}
+                onChange={(e) => handleColorChange('primary', e.target.value)}
+                placeholder="#CD9C55"
+                className="flex-1 font-mono"
+              />
+            </div>
           </div>
-        </div>
-      )}
 
-      {/* Esquema de cores */}
-      <div className="space-y-3">
-        <Label>Esquema de Combinação</Label>
-        <div className="space-y-2">
-          {schemes.map((scheme) => (
-            <div
-              key={scheme.value}
-              className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                selectedScheme === scheme.value
-                  ? 'border-brand-500 bg-brand-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-              onClick={() => setSelectedScheme(scheme.value as any)}
-            >
+          {/* Cor Secundária */}
+          {brandColors.secondary ? (
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium text-gray-800">{scheme.label}</div>
-                  <div className="text-sm text-gray-600">{scheme.description}</div>
-                </div>
-                <div className="w-4 h-4 rounded-full border-2 border-gray-300">
-                  {selectedScheme === scheme.value && (
-                    <div className="w-full h-full rounded-full bg-brand-500"></div>
-                  )}
-                </div>
+                <Label>Cor Secundária</Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeColor('secondary')}
+                  className="h-6 w-6 p-0"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <div
+                  className="w-12 h-12 rounded-lg border-2 border-gray-200 cursor-pointer"
+                  style={{ backgroundColor: brandColors.secondary }}
+                  onClick={() => document.getElementById('secondary-color')?.click()}
+                />
+                <Input
+                  id="secondary-color"
+                  type="color"
+                  value={brandColors.secondary}
+                  onChange={(e) => handleColorChange('secondary', e.target.value)}
+                  className="sr-only"
+                />
+                <Input
+                  value={brandColors.secondary}
+                  onChange={(e) => handleColorChange('secondary', e.target.value)}
+                  placeholder="#6B7280"
+                  className="flex-1 font-mono"
+                />
               </div>
             </div>
-          ))}
-        </div>
-      </div>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={addSecondaryColor}
+              className="w-full flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Adicionar Cor Secundária
+            </Button>
+          )}
 
-      {/* Botão gerar */}
-      <Button
-        onClick={handleGeneratePalette}
-        disabled={isGenerating}
-        className="w-full bg-brand-500 hover:bg-brand-600 text-white"
-      >
-        {isGenerating ? 'Gerando...' : 'Gerar Paleta'}
-      </Button>
+          {/* Cor Terciária */}
+          {brandColors.tertiary ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Cor Terciária</Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeColor('tertiary')}
+                  className="h-6 w-6 p-0"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <div
+                  className="w-12 h-12 rounded-lg border-2 border-gray-200 cursor-pointer"
+                  style={{ backgroundColor: brandColors.tertiary }}
+                  onClick={() => document.getElementById('tertiary-color')?.click()}
+                />
+                <Input
+                  id="tertiary-color"
+                  type="color"
+                  value={brandColors.tertiary}
+                  onChange={(e) => handleColorChange('tertiary', e.target.value)}
+                  className="sr-only"
+                />
+                <Input
+                  value={brandColors.tertiary}
+                  onChange={(e) => handleColorChange('tertiary', e.target.value)}
+                  placeholder="#10B981"
+                  className="flex-1 font-mono"
+                />
+              </div>
+            </div>
+          ) : brandColors.secondary && (
+            <Button
+              variant="outline"
+              onClick={addTertiaryColor}
+              className="w-full flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Adicionar Cor Terciária
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Upload de Imagem */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Extrair Cores de Imagem</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              <Button
+                variant="outline"
+                onClick={() => document.getElementById('image-upload')?.click()}
+                className="flex items-center gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                Upload Imagem
+              </Button>
+            </div>
+
+            {extractedColors.length > 0 && (
+              <div className="space-y-2">
+                <Label>Cores Extraídas</Label>
+                <div className="flex gap-2">
+                  {extractedColors.map((color, index) => (
+                    <div
+                      key={index}
+                      className="w-12 h-12 rounded-lg border-2 border-gray-200 cursor-pointer hover:scale-105 transition-transform"
+                      style={{ backgroundColor: color }}
+                      onClick={() => handleColorChange('primary', color)}
+                      title={`${color} - Clique para usar como primária`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Teoria das Cores */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Harmonia de Cores</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {harmonyTypes.map((type) => (
+              <div
+                key={type.value}
+                className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                  harmonyType === type.value
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+                onClick={() => setHarmonyType(type.value as any)}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium text-gray-800">{type.label}</div>
+                    <div className="text-sm text-gray-600">{type.description}</div>
+                  </div>
+                  <div className="w-4 h-4 rounded-full border-2 border-gray-300">
+                    {harmonyType === type.value && (
+                      <div className="w-full h-full rounded-full bg-blue-500"></div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

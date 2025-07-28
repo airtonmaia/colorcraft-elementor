@@ -3,17 +3,17 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TailwindShades } from '@/lib/colorUtils';
-import { Copy, Download, Heart, Save } from 'lucide-react';
+import { Copy, Download, Save, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface PalettePreviewProps {
-  shades: TailwindShades | null;
-  colorScheme: string[];
+  palette: { [key: string]: TailwindShades } | null;
+  harmonies: string[];
   paletteName: string;
   onSavePalette: () => void;
 }
 
-const PalettePreview = ({ shades, colorScheme, paletteName, onSavePalette }: PalettePreviewProps) => {
+const PalettePreview = ({ palette, harmonies, paletteName, onSavePalette }: PalettePreviewProps) => {
   const [hoveredColor, setHoveredColor] = useState<string | null>(null);
 
   const copyToClipboard = (color: string) => {
@@ -22,12 +22,12 @@ const PalettePreview = ({ shades, colorScheme, paletteName, onSavePalette }: Pal
   };
 
   const exportPalette = () => {
-    if (!shades) return;
+    if (!palette) return;
     
     const paletteData = {
       name: paletteName,
-      shades,
-      colorScheme,
+      palette,
+      harmonies,
       createdAt: new Date().toISOString(),
     };
     
@@ -42,15 +42,15 @@ const PalettePreview = ({ shades, colorScheme, paletteName, onSavePalette }: Pal
     toast.success('Paleta exportada!');
   };
 
-  if (!shades) {
+  if (!palette || Object.keys(palette).length === 0) {
     return (
       <Card className="bg-gray-50 border-dashed border-2 border-gray-300">
         <CardContent className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Copy className="w-8 h-8 text-gray-400" />
+              <Eye className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-gray-600">Gere uma paleta para visualizar os tons</p>
+            <p className="text-gray-600">Adicione uma cor para gerar a paleta</p>
           </div>
         </CardContent>
       </Card>
@@ -63,7 +63,9 @@ const PalettePreview = ({ shades, colorScheme, paletteName, onSavePalette }: Pal
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-xl font-semibold text-gray-800">{paletteName}</h3>
-          <p className="text-sm text-gray-600">Esquema de cores gerado</p>
+          <p className="text-sm text-gray-600">
+            {Object.keys(palette).length} {Object.keys(palette).length === 1 ? 'cor' : 'cores'} da marca
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={onSavePalette} className="flex items-center gap-2">
@@ -77,77 +79,85 @@ const PalettePreview = ({ shades, colorScheme, paletteName, onSavePalette }: Pal
         </div>
       </div>
 
-      {/* Tons Tailwind */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <span>Tons Tailwind</span>
-            <span className="text-sm font-normal text-gray-600">(50-900)</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
-            {Object.entries(shades).map(([shade, color]) => (
+      {/* Paletas de cada cor */}
+      {Object.entries(palette).map(([colorName, shades]) => (
+        <Card key={colorName}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 capitalize">
               <div
-                key={shade}
-                className="group relative"
-                onMouseEnter={() => setHoveredColor(color)}
-                onMouseLeave={() => setHoveredColor(null)}
-              >
+                className="w-4 h-4 rounded-full"
+                style={{ backgroundColor: shades[500] }}
+              />
+              Cor {colorName}
+              <span className="text-sm font-normal text-gray-600">(50-950)</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-6 md:grid-cols-11 gap-2">
+              {Object.entries(shades).map(([shade, color]) => (
                 <div
-                  className="aspect-square rounded-lg border-2 border-gray-200 cursor-pointer hover:scale-105 transition-transform"
-                  style={{ backgroundColor: color }}
-                  onClick={() => copyToClipboard(color)}
-                  title={`${shade}: ${color}`}
-                />
-                <div className="text-center mt-1">
-                  <div className="text-xs font-medium text-gray-700">{shade}</div>
-                  <div className="text-xs text-gray-500 font-mono">{color}</div>
-                </div>
-                {hoveredColor === color && (
-                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white px-2 py-1 rounded text-xs whitespace-nowrap">
-                    Clique para copiar
+                  key={shade}
+                  className="group relative"
+                  onMouseEnter={() => setHoveredColor(color)}
+                  onMouseLeave={() => setHoveredColor(null)}
+                >
+                  <div
+                    className="aspect-square rounded-lg border-2 border-gray-200 cursor-pointer hover:scale-105 transition-transform"
+                    style={{ backgroundColor: color }}
+                    onClick={() => copyToClipboard(color)}
+                    title={`${colorName}-${shade}: ${color}`}
+                  />
+                  <div className="text-center mt-1">
+                    <div className="text-xs font-medium text-gray-700">{shade}</div>
+                    <div className="text-xs text-gray-500 font-mono">{color}</div>
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                  {hoveredColor === color && (
+                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white px-2 py-1 rounded text-xs whitespace-nowrap z-10">
+                      Clique para copiar
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
 
-      {/* Esquema de cores */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Esquema de Cores</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4">
-            {colorScheme.map((color, index) => (
-              <div
-                key={index}
-                className="group relative flex-1"
-                onMouseEnter={() => setHoveredColor(color)}
-                onMouseLeave={() => setHoveredColor(null)}
-              >
+      {/* Harmonias de cores */}
+      {harmonies.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Harmonia de Cores</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {harmonies.map((color, index) => (
                 <div
-                  className="aspect-square rounded-lg border-2 border-gray-200 cursor-pointer hover:scale-105 transition-transform"
-                  style={{ backgroundColor: color }}
-                  onClick={() => copyToClipboard(color)}
-                  title={color}
-                />
-                <div className="text-center mt-2">
-                  <div className="text-sm font-mono text-gray-700">{color}</div>
-                </div>
-                {hoveredColor === color && (
-                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white px-2 py-1 rounded text-xs whitespace-nowrap">
-                    Clique para copiar
+                  key={index}
+                  className="group relative"
+                  onMouseEnter={() => setHoveredColor(color)}
+                  onMouseLeave={() => setHoveredColor(null)}
+                >
+                  <div
+                    className="aspect-square rounded-lg border-2 border-gray-200 cursor-pointer hover:scale-105 transition-transform"
+                    style={{ backgroundColor: color }}
+                    onClick={() => copyToClipboard(color)}
+                    title={color}
+                  />
+                  <div className="text-center mt-2">
+                    <div className="text-sm font-mono text-gray-700">{color}</div>
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                  {hoveredColor === color && (
+                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white px-2 py-1 rounded text-xs whitespace-nowrap z-10">
+                      Clique para copiar
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
