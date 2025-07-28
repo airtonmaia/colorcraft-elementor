@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Type, Eye, Download, Settings, Moon, Sun } from 'lucide-react';
+import { Type, Eye, Download, Settings } from 'lucide-react';
 import { fontCombinations, FontCombination, generateGoogleFontsUrl, generateTypographyCSS } from '@/lib/typographyUtils';
 
 interface TypographySelectorProps {
@@ -13,7 +13,6 @@ interface TypographySelectorProps {
 
 const TypographySelector = ({ onFontSelected, selectedFont }: TypographySelectorProps) => {
   const [previewFont, setPreviewFont] = useState<FontCombination | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   // Carregar fontes automaticamente ao montar o componente
   useEffect(() => {
@@ -26,19 +25,6 @@ const TypographySelector = ({ onFontSelected, selectedFont }: TypographySelector
         document.head.appendChild(link);
       }
     });
-  }, []);
-
-  // Detectar dark mode
-  useEffect(() => {
-    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    setIsDarkMode(darkModeQuery.matches);
-    
-    const handleDarkModeChange = (e: MediaQueryListEvent) => {
-      setIsDarkMode(e.matches);
-    };
-    
-    darkModeQuery.addEventListener('change', handleDarkModeChange);
-    return () => darkModeQuery.removeEventListener('change', handleDarkModeChange);
   }, []);
 
   const handleFontPreview = (font: FontCombination) => {
@@ -61,28 +47,13 @@ const TypographySelector = ({ onFontSelected, selectedFont }: TypographySelector
     return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
   };
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
-  };
-
   return (
     <Card className="dark:bg-gray-800 dark:border-gray-700">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 dark:text-white">
-            <Type className="w-5 h-5" />
-            Seletor de Tipografia
-          </CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={toggleDarkMode}
-            className="dark:border-gray-600 dark:text-gray-300"
-          >
-            {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </Button>
-        </div>
+        <CardTitle className="flex items-center gap-2 dark:text-white">
+          <Type className="w-5 h-5" />
+          Seletor de Tipografia
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="combinations" className="space-y-4">

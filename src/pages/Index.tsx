@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
@@ -22,17 +21,20 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState('generator');
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // Dark mode detection
+  // Dark mode initialization and persistence
   useEffect(() => {
-    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    setIsDarkMode(darkModeQuery.matches);
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
-    const handleDarkModeChange = (e: MediaQueryListEvent) => {
-      setIsDarkMode(e.matches);
-    };
+    const shouldUseDark = savedTheme === 'dark' || (savedTheme === null && systemPrefersDark);
     
-    darkModeQuery.addEventListener('change', handleDarkModeChange);
-    return () => darkModeQuery.removeEventListener('change', handleDarkModeChange);
+    setIsDarkMode(shouldUseDark);
+    
+    if (shouldUseDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }, []);
 
   // Hash navigation management
@@ -63,8 +65,16 @@ const Index = () => {
   };
 
   const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
   };
 
   const renderContent = () => {
