@@ -1,10 +1,9 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Type, Eye, Download, Settings } from 'lucide-react';
+import { Type, Eye, Download, Settings, Moon, Sun } from 'lucide-react';
 import { fontCombinations, FontCombination, generateGoogleFontsUrl, generateTypographyCSS } from '@/lib/typographyUtils';
 
 interface TypographySelectorProps {
@@ -14,18 +13,36 @@ interface TypographySelectorProps {
 
 const TypographySelector = ({ onFontSelected, selectedFont }: TypographySelectorProps) => {
   const [previewFont, setPreviewFont] = useState<FontCombination | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Carregar fontes automaticamente ao montar o componente
+  useEffect(() => {
+    fontCombinations.forEach(font => {
+      const existingLink = document.querySelector(`link[href*="${font.googleFonts[0]}"]`);
+      if (!existingLink) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = generateGoogleFontsUrl(font.googleFonts);
+        document.head.appendChild(link);
+      }
+    });
+  }, []);
+
+  // Detectar dark mode
+  useEffect(() => {
+    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    setIsDarkMode(darkModeQuery.matches);
+    
+    const handleDarkModeChange = (e: MediaQueryListEvent) => {
+      setIsDarkMode(e.matches);
+    };
+    
+    darkModeQuery.addEventListener('change', handleDarkModeChange);
+    return () => darkModeQuery.removeEventListener('change', handleDarkModeChange);
+  }, []);
 
   const handleFontPreview = (font: FontCombination) => {
     setPreviewFont(font);
-    
-    // Carregar Google Fonts dinamicamente
-    const existingLink = document.querySelector(`link[href*="${font.googleFonts[0]}"]`);
-    if (!existingLink) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = generateGoogleFontsUrl(font.googleFonts);
-      document.head.appendChild(link);
-    }
   };
 
   const handleFontSelect = (font: FontCombination) => {
@@ -35,28 +52,43 @@ const TypographySelector = ({ onFontSelected, selectedFont }: TypographySelector
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      modern: 'bg-blue-100 text-blue-800',
-      elegant: 'bg-purple-100 text-purple-800',
-      corporate: 'bg-gray-100 text-gray-800',
-      creative: 'bg-green-100 text-green-800',
-      minimal: 'bg-orange-100 text-orange-800',
+      modern: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+      elegant: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+      corporate: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+      creative: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      minimal: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
     };
-    return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+    return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+  };
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    document.documentElement.classList.toggle('dark');
   };
 
   return (
-    <Card>
+    <Card className="dark:bg-gray-800 dark:border-gray-700">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Type className="w-5 h-5" />
-          Sugestões de Tipografia
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 dark:text-white">
+            <Type className="w-5 h-5" />
+            Seletor de Tipografia
+          </CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleDarkMode}
+            className="dark:border-gray-600 dark:text-gray-300"
+          >
+            {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="combinations" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="combinations">Combinações</TabsTrigger>
-            <TabsTrigger value="preview">Preview</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 dark:bg-gray-700">
+            <TabsTrigger value="combinations" className="dark:text-gray-300">Combinações</TabsTrigger>
+            <TabsTrigger value="preview" className="dark:text-gray-300">Preview</TabsTrigger>
           </TabsList>
 
           <TabsContent value="combinations" className="space-y-4">
@@ -64,7 +96,7 @@ const TypographySelector = ({ onFontSelected, selectedFont }: TypographySelector
               {fontCombinations.map((font) => (
                 <Card 
                   key={font.id} 
-                  className={`cursor-pointer transition-all hover:shadow-md ${
+                  className={`cursor-pointer transition-all hover:shadow-md dark:bg-gray-700 dark:border-gray-600 ${
                     selectedFont?.id === font.id ? 'ring-2 ring-brand-500' : ''
                   }`}
                   onClick={() => handleFontSelect(font)}
@@ -72,7 +104,7 @@ const TypographySelector = ({ onFontSelected, selectedFont }: TypographySelector
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-gray-800">{font.name}</h3>
+                        <h3 className="font-semibold text-gray-800 dark:text-gray-200">{font.name}</h3>
                         <Badge className={getCategoryColor(font.category)}>
                           {font.category}
                         </Badge>
@@ -84,29 +116,30 @@ const TypographySelector = ({ onFontSelected, selectedFont }: TypographySelector
                           e.stopPropagation();
                           handleFontPreview(font);
                         }}
+                        className="dark:border-gray-600 dark:text-gray-300"
                       >
                         <Eye className="w-4 h-4" />
                       </Button>
                     </div>
                     
                     <div className="space-y-2">
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
                         <span className="font-medium">Primária:</span> {font.primary}
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
                         <span className="font-medium">Secundária:</span> {font.secondary}
                       </div>
                       
                       {/* Preview das fontes */}
-                      <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-600 rounded-lg">
                         <div 
-                          className="text-lg font-bold mb-1"
+                          className="text-lg font-bold mb-1 dark:text-white"
                           style={{ fontFamily: `'${font.primary}', sans-serif` }}
                         >
                           Título Principal
                         </div>
                         <div 
-                          className="text-sm text-gray-600"
+                          className="text-sm text-gray-600 dark:text-gray-300"
                           style={{ fontFamily: `'${font.secondary}', sans-serif` }}
                         >
                           Este é um texto de exemplo para visualizar a combinação de fontes.
@@ -123,7 +156,7 @@ const TypographySelector = ({ onFontSelected, selectedFont }: TypographySelector
             {previewFont ? (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">{previewFont.name}</h3>
+                  <h3 className="text-lg font-semibold dark:text-white">{previewFont.name}</h3>
                   <Button
                     variant="outline"
                     size="sm"
@@ -137,11 +170,39 @@ const TypographySelector = ({ onFontSelected, selectedFont }: TypographySelector
                       a.click();
                       URL.revokeObjectURL(url);
                     }}
+                    className="dark:border-gray-600 dark:text-gray-300"
                   >
                     <Download className="w-4 h-4 mr-1" />
                     Baixar CSS
                   </Button>
                 </div>
+
+                {/* Preview completo com todos os elementos */}
+                <Card className="dark:bg-gray-700 dark:border-gray-600">
+                  <CardHeader>
+                    <CardTitle className="text-sm dark:text-white">Preview Completo</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      <div style={{ fontFamily: `'${previewFont.primary}', sans-serif` }}>
+                        <h1 className="text-4xl font-bold mb-2 dark:text-white">Heading 1</h1>
+                        <h2 className="text-3xl font-semibold mb-2 dark:text-white">Heading 2</h2>
+                        <h3 className="text-2xl font-medium mb-2 dark:text-white">Heading 3</h3>
+                        <h4 className="text-xl font-medium mb-2 dark:text-white">Heading 4</h4>
+                      </div>
+                      
+                      <div style={{ fontFamily: `'${previewFont.secondary}', sans-serif` }}>
+                        <p className="text-base mb-4 dark:text-gray-300">
+                          Este é um parágrafo de exemplo usando a fonte secundária. 
+                          Demonstra como o texto corrido aparecerá no seu projeto.
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Texto menor para legendas e informações complementares.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {/* Preview dos tamanhos */}
                 <Card>
@@ -240,7 +301,7 @@ const TypographySelector = ({ onFontSelected, selectedFont }: TypographySelector
                 </Card>
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <Settings className="w-12 h-12 mx-auto mb-4 text-gray-400" />
                 <p>Selecione uma combinação de fontes para visualizar o preview</p>
               </div>

@@ -1,75 +1,70 @@
 
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader } from '@/components/ui/sidebar';
-import { Palette, Type, Layers, Layout, BarChart3, Eye } from 'lucide-react';
+import { Home, Palette, Type, Grid3x3, Globe, BarChart3, Eye } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from '@/components/ui/sidebar';
 
-const menuItems = [
+const items = [
   {
     title: 'Gerador',
     url: '#generator',
-    icon: Palette,
-    description: 'Criar paletas de cores'
-  },
-  {
-    title: 'Verificar Contraste',
-    url: '#contrast',
-    icon: Eye,
-    description: 'Grade de contraste de cores'
+    icon: Home,
   },
   {
     title: 'Tipografia',
     url: '#typography',
     icon: Type,
-    description: 'Selecionar fontes'
   },
   {
     title: 'Widgets Pro',
     url: '#widgets',
-    icon: Layers,
-    description: 'Componentes Elementor'
+    icon: Grid3x3,
   },
   {
-    title: 'Relume Demo',
-    url: '#relume',
-    icon: Layout,
-    description: 'Layout demonstração'
+    title: 'Website Demo',
+    url: '#website',
+    icon: Globe,
+  },
+  {
+    title: 'Contraste',
+    url: '#contrast',
+    icon: Eye,
   },
   {
     title: 'Dashboard',
     url: '#dashboard',
     icon: BarChart3,
-    description: 'Painel de controle'
-  }
+  },
 ];
 
 export function AppSidebar() {
   return (
-    <Sidebar>
-      <SidebarHeader className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-            <Palette className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold text-gray-800">Palette Pro</h1>
-            <p className="text-xs text-gray-600">Gerador de Paletas</p>
-          </div>
-        </div>
-      </SidebarHeader>
-      
+    <Sidebar className="dark:bg-gray-800 dark:border-gray-700">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Ferramentas</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-brand-600 dark:text-brand-400 font-semibold">
+            <Palette className="w-4 h-4 mr-2" />
+            Palette Generator
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a href={item.url} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 transition-colors">
-                      <item.icon className="w-5 h-5" />
-                      <div>
-                        <div className="font-medium">{item.title}</div>
-                        <div className="text-xs text-gray-600">{item.description}</div>
-                      </div>
+                    <a 
+                      href={item.url}
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+                    >
+                      <item.icon className="w-4 h-4" />
+                      <span>{item.title}</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

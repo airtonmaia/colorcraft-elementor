@@ -1,12 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
+import { Moon, Sun } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
 import ColorPicker from '@/components/ColorPicker';
 import PalettePreview from '@/components/PalettePreview';
 import ContrastChecker from '@/components/ContrastChecker';
 import ElementorWidgets from '@/components/ElementorWidgets';
-import RelumeDemo from '@/components/RelumeDemo';
+import WebsiteDemo from '@/components/WebsiteDemo';
 import Dashboard from '@/components/Dashboard';
 import TypographySelector from '@/components/TypographySelector';
 import { TailwindShades } from '@/lib/colorUtils';
@@ -18,8 +20,22 @@ const Index = () => {
   const [paletteName, setPaletteName] = useState('Paleta Personalizada');
   const [selectedFont, setSelectedFont] = useState<FontCombination | null>(null);
   const [activeTab, setActiveTab] = useState('generator');
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // Gerenciar navegação via hash
+  // Dark mode detection
+  useEffect(() => {
+    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    setIsDarkMode(darkModeQuery.matches);
+    
+    const handleDarkModeChange = (e: MediaQueryListEvent) => {
+      setIsDarkMode(e.matches);
+    };
+    
+    darkModeQuery.addEventListener('change', handleDarkModeChange);
+    return () => darkModeQuery.removeEventListener('change', handleDarkModeChange);
+  }, []);
+
+  // Hash navigation management
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
@@ -46,6 +62,11 @@ const Index = () => {
     console.log('Salvando paleta:', { currentPalette, currentHarmonies, paletteName, selectedFont });
   };
 
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    document.documentElement.classList.toggle('dark');
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'generator':
@@ -69,7 +90,7 @@ const Index = () => {
           <ContrastChecker palette={currentPalette} />
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-600">Gere uma paleta primeiro para verificar contrastes</p>
+            <p className="text-gray-600 dark:text-gray-400">Gere uma paleta primeiro para verificar contrastes</p>
           </div>
         );
       case 'typography':
@@ -87,9 +108,9 @@ const Index = () => {
             selectedFont={selectedFont}
           />
         );
-      case 'relume':
+      case 'website':
         return (
-          <RelumeDemo 
+          <WebsiteDemo 
             shades={currentPalette ? currentPalette.primary : null} 
             colorScheme={currentHarmonies} 
             selectedFont={selectedFont}
@@ -118,19 +139,29 @@ const Index = () => {
 
   return (
     <SidebarProvider defaultOpen>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-gray-50 to-white">
+      <div className={`min-h-screen flex w-full transition-colors duration-300 ${
+        isDarkMode ? 'dark bg-gray-900' : 'bg-gradient-to-br from-gray-50 to-white'
+      }`}>
         <AppSidebar />
         
         <SidebarInset className="flex-1">
           {/* Header */}
-          <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
+          <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
             <div className="flex items-center justify-between h-16 px-6">
               <div className="flex items-center gap-3">
-                <SidebarTrigger className="h-8 w-8" />
-                <div className="text-sm text-gray-600">
+                <SidebarTrigger className="h-8 w-8 dark:text-gray-300" />
+                <div className="text-sm text-gray-600 dark:text-gray-400">
                   Bem-vindo, <span className="font-semibold">Usuário</span>
                 </div>
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleDarkMode}
+                className="dark:border-gray-600 dark:text-gray-300"
+              >
+                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </Button>
             </div>
           </div>
 
@@ -140,9 +171,9 @@ const Index = () => {
           </main>
 
           {/* Footer */}
-          <div className="bg-white border-t border-gray-200 mt-16">
+          <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-16">
             <div className="px-6 py-8">
-              <div className="text-center text-gray-600">
+              <div className="text-center text-gray-600 dark:text-gray-400">
                 <p className="text-sm">
                   © 2024 Palette Generator. Transforme suas ideias em paletas profissionais.
                 </p>

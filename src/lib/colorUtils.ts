@@ -1,4 +1,3 @@
-
 import chroma from 'chroma-js';
 
 export interface ColorPalette {
@@ -36,41 +35,28 @@ export interface ContrastResult {
 
 export const generateTailwindShades = (baseColor: string): TailwindShades => {
   const base = chroma(baseColor);
+  const hsl = base.hsl();
+  const [h, s, l] = [hsl[0] || 0, hsl[1] || 0, hsl[2] || 0];
   
-  // Melhor algoritmo para geração de tons
-  const lightness = base.get('hsl.l');
-  const saturation = base.get('hsl.s');
-  const hue = base.get('hsl.h');
-  
-  // Gerar tons mais claros com melhor distribuição
-  const generateLighterShades = () => {
-    return {
-      50: chroma.hsl(hue, Math.min(saturation * 0.3, 0.3), 0.97).hex(),
-      100: chroma.hsl(hue, Math.min(saturation * 0.4, 0.4), 0.93).hex(),
-      200: chroma.hsl(hue, Math.min(saturation * 0.5, 0.5), 0.86).hex(),
-      300: chroma.hsl(hue, Math.min(saturation * 0.6, 0.6), 0.76).hex(),
-      400: chroma.hsl(hue, Math.min(saturation * 0.8, 0.8), 0.64).hex(),
-    };
+  // Função para gerar cores seguindo o padrão Tailwind
+  const generateShade = (lightness: number, saturationMultiplier: number = 1) => {
+    const adjustedSaturation = Math.min(s * saturationMultiplier, 1);
+    return chroma.hsl(h, adjustedSaturation, lightness).hex();
   };
   
-  // Gerar tons mais escuros com melhor distribuição
-  const generateDarkerShades = () => {
-    return {
-      600: chroma.hsl(hue, Math.min(saturation * 1.1, 1), Math.max(lightness * 0.8, 0.35)).hex(),
-      700: chroma.hsl(hue, Math.min(saturation * 1.2, 1), Math.max(lightness * 0.65, 0.28)).hex(),
-      800: chroma.hsl(hue, Math.min(saturation * 1.3, 1), Math.max(lightness * 0.5, 0.22)).hex(),
-      900: chroma.hsl(hue, Math.min(saturation * 1.4, 1), Math.max(lightness * 0.35, 0.15)).hex(),
-      950: chroma.hsl(hue, Math.min(saturation * 1.5, 1), Math.max(lightness * 0.2, 0.08)).hex(),
-    };
-  };
-  
-  const lighter = generateLighterShades();
-  const darker = generateDarkerShades();
-  
+  // Gerar tons seguindo a escala do Tailwind CSS
   return {
-    ...lighter,
-    500: baseColor,
-    ...darker,
+    50: generateShade(0.98, 0.1),
+    100: generateShade(0.95, 0.2),
+    200: generateShade(0.90, 0.3),
+    300: generateShade(0.83, 0.4),
+    400: generateShade(0.73, 0.6),
+    500: baseColor, // Cor base
+    600: generateShade(Math.max(l * 0.85, 0.45), 1.1),
+    700: generateShade(Math.max(l * 0.70, 0.38), 1.2),
+    800: generateShade(Math.max(l * 0.55, 0.25), 1.3),
+    900: generateShade(Math.max(l * 0.35, 0.15), 1.4),
+    950: generateShade(Math.max(l * 0.20, 0.08), 1.5),
   };
 };
 
