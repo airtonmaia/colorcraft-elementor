@@ -23,10 +23,12 @@ const Index = () => {
 
   // Top navigation items
   const topNavItems = [
-    { id: 'generate', label: 'Generate', active: true },
+    { id: 'generate', label: 'Home', active: true },
     { id: 'website', label: 'Website Demo' },
-    { id: 'tailwind-colors', label: 'Tailwind Colors' },
-    { id: 'contrast', label: 'Contrast' }
+    { id: 'typography', label: 'Typography' },
+    { id: 'contrast', label: 'Contrast' },
+    { id: 'widgets', label: 'Widget' }
+    
   ];
 
   // Bottom navigation items
