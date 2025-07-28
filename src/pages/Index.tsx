@@ -24,7 +24,7 @@ const Index = () => {
   // Top navigation items
   const topNavItems = [
     { id: 'generate', label: 'Generate', active: true },
-    { id: 'my-palettes', label: 'My palettes' },
+    { id: 'website', label: 'Website Demo' },
     { id: 'tailwind-colors', label: 'Tailwind Colors' },
     { id: 'more', label: 'More' }
   ];
