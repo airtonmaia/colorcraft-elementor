@@ -26,7 +26,7 @@ const Index = () => {
     { id: 'generate', label: 'Generate', active: true },
     { id: 'website', label: 'Website Demo' },
     { id: 'tailwind-colors', label: 'Tailwind Colors' },
-    { id: 'more', label: 'More' }
+    { id: 'contrast', label: 'Contrast' }
   ];
 
   // Bottom navigation items
